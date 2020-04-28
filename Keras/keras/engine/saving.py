@@ -128,6 +128,9 @@ def _serialize_model(model, h5dict, include_optimizer=True):
     model_config['class_name'] = model.__class__.__name__
     model_config['config'] = model.get_config()
     model_config = json.dumps(model_config, default=get_json_type)
+    # This is a fix for Dragonfly 4.1 importing, it doesn't understand the output_padding entry
+    # Internally, Dragonfly 4.1 uses Keras 2.1.6, which didn't have this entry
+    model_config = model_config.replace(', "output_padding": null', "")
     model_config = model_config.encode('utf-8')
     h5dict['model_config'] = model_config
 
@@ -173,7 +176,7 @@ def _serialize_model(model, h5dict, include_optimizer=True):
                 'Prefer using a Keras optimizer instead '
                 '(see keras.io/optimizers).')
         else:
-            h5dict['training_config'] = json.dumps({
+            train_config = json.dumps({
                 'optimizer_config': {
                     'class_name': model.optimizer.__class__.__name__,
                     'config': model.optimizer.get_config()
@@ -183,7 +186,9 @@ def _serialize_model(model, h5dict, include_optimizer=True):
                 'weighted_metrics': model._compile_weighted_metrics,
                 'sample_weight_mode': model.sample_weight_mode,
                 'loss_weights': model.loss_weights,
-            }, default=get_json_type).encode('utf8')
+            }, default=get_json_type)
+            train_config = train_config.replace("learning_rate", "lr")
+            h5dict['training_config'] = train_config.encode('utf8')
             symbolic_weights = getattr(model.optimizer, 'weights')
             if symbolic_weights:
                 optimizer_weights_group = h5dict['optimizer_weights']
