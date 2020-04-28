@@ -1,0 +1,1 @@
+Modified [Keras](https://github.com/keras-team/keras) 2.3.1 for compatibility with Dragonfly 4.1 which uses Keras 2.1.6 internally. Includes [MultiResUNet](https://github.com/nibtehaz/MultiResUNet) modification for multiple classes with softmax and exporting to Dragonfly 4.1. 
